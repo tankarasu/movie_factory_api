@@ -19,6 +19,12 @@
 // route recherche par personnes (acteurs ET réalisateurs, etc)
 `https://api.themoviedb.org/3/search/person?api_key=d147fe4e04ba78d12adf57c89fb3ad72&language=en-US&query=pitt&page=1&include_adult=false`;
 
+// Détails acteurs pour chaque film
+`https://api.themoviedb.org/3/movie/405774/credits?language=en-US&api_key=d147fe4e04ba78d12adf57c89fb3ad72`;
+
+// préfixe pour images (poster path obtenu dans les détails de chaque film)
+`https://image.tmdb.org/t/p/w500/`;
+
 // POST //
 
 // PUT //
