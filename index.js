@@ -10,7 +10,7 @@ const app = express();
 
 // routes
 const movieRouter = require("./routes/movieRouter.js");
-app.use('/',movieRouter)
+app.use("/api/movie", movieRouter);
 
 // listening
 app.listen(PORT, () => console.log("listening on port:" + PORT));

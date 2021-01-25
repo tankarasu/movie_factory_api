@@ -3,15 +3,19 @@ const express = require("express");
 let movieRouter = express.Router();
 const axios = require("axios");
 
-// variables globales
-const fetch = axios.create({
-  baseURL: "https://api.themoviedb.org/3",
-});
-
-movieRouter.route("/").get((req, res) => {
-  apiCall("/movie/popular", "get", {}, res, result => {
-    console.log(result);
-  });
+// requête pour les films les plus populaires
+// TODO intégrer dans une documentation
+movieRouter.route("/").get((req, response) => {
+  axios
+    .get(
+      "https://api.themoviedb.org/3/movie/popular?api_key=d147fe4e04ba78d12adf57c89fb3ad72&language=fr-FR&page=1"
+    )
+    .then(result => {
+      response.send(result.data);
+    })
+    .catch(err => {
+      throw err;
+    });
 });
 
 // GET //
@@ -48,22 +52,3 @@ movieRouter.route("/").get((req, res) => {
 // export le router
 console.log(process.env.API_KEY);
 module.exports = movieRouter;
-
-// functions
-function apiCall(url, method, data, res, next) {
-  fetch({
-    method: method,
-    url: url,
-    data: data,
-  })
-    .then(response => {
-      if (response.data.status == "success") {
-        next(response.data.result);
-      } else {
-        res.send("request failed");
-      }
-    })
-    .catch(err => {
-      res.send("request failed");
-    });
-}
