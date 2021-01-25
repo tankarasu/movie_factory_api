@@ -1,19 +1,23 @@
-// import des modules
+// import module express pour création de sa méthode de création de routeur
 const express = require("express");
 let movieRouter = express.Router();
+// import axios pour utilisation avec requêtes API en suivant
 const axios = require("axios");
 
 // requête pour les films les plus populaires
 // TODO intégrer dans une documentation
+
+//racine de réponse API: http://localhost:3050/api/movie
+// réponse si url complète avec api/movie termine par un / sans params supplémentaires
 movieRouter.route("/").get((req, response) => {
   axios
-    .get(
+    .get( // exécution de la requête
       "https://api.themoviedb.org/3/movie/popular?api_key=d147fe4e04ba78d12adf57c89fb3ad72&language=fr-FR&page=1"
     )
-    .then(result => {
+    .then(result => { // envoi de la réponse si statut réponse Ok
       response.send(result.data);
     })
-    .catch(err => {
+    .catch(err => { // sinon erreur renvoyée dans brower/postman
       throw err;
     });
 });
@@ -49,6 +53,6 @@ movieRouter.route("/").get((req, response) => {
 
 // DELETE //
 
-// export le router
+// exporte le router pour import dans fichiers tiers
 console.log(process.env.API_KEY);
 module.exports = movieRouter;
