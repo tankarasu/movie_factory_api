@@ -1,6 +1,6 @@
 // import module express pour création de sa méthode de création de routeur
 const express = require("express");
-let movieRouter = express.Router();
+const movieRouter = express.Router();
 // import axios pour utilisation avec requêtes API en suivant
 const axios = require("axios");
 
@@ -18,7 +18,7 @@ movieRouter.route("/").get((request, response) => {
   axios
     .get(
       // exécution de la requête
-      `${baseUrl}movie/popular?api_key=${API_KEY}&language=fr-FR&page=1`
+      `${baseUrl}movie/popular?api_key=${API_KEY}&language=en-US&page=1`
     )
     // envoi de la réponse si statut réponse Ok
     .then(result => response.send(result.data))
@@ -119,17 +119,8 @@ movieRouter.route("/categories").get((request, response) => {
     });
 });
 
-// route principale?
-//`${baseUrl}discover/movie?api_key=${API_KEY}`;
-
 // préfixe pour images (poster path obtenu dans les détails de chaque film)
 //`https://image.tmdb.org/t/p/w500/`;
-
-// POST //
-
-// PUT //
-
-// DELETE //
 
 // exporte le router pour import dans fichiers tiers
 module.exports = movieRouter;
