@@ -1,16 +1,26 @@
 // import de modules
+// import du framework backend 
 const express = require("express");
+// gestion des routes en relation avec user
 const userRouter = express.Router();
+// import du schema utilisateur 
 const User = require("../models/user.js");
+// import du module pour crypter le mot de passe
 const bcrypt = require("bcrypt");
+// indice pour la complexité du grain de sel 
 const rounds = 10;
+// module qui retourne le token 
 const jwt = require("jsonwebtoken");
+// signature pour décoder le token
 const tokenSecret = "my-secret-token";
+// vérification validité du token 
 const middleware = require("./middleware.js");
 
 // routes
 // connexion
+// fonction get liée à la route login 
 userRouter.get("/login", (req, res) => {
+  // comparaison 
   User.findOne({ email: req.body.email }).then(user => {
     if (!user) res.status(404).json({ error: "no user with that email found" });
     else {
@@ -27,15 +37,16 @@ userRouter.get("/login", (req, res) => {
 // TODO gestion d'erreur
 userRouter.post("/signup", (req, res) => {
   let users = [];
+  // récupère tous les objets dans user
   User.find({})
     .exec()
     .then(item => {
+      // destructuring par spread operator 
       users = [...item];
-      isValid = true;
+      let isValid = true;
       const regex = new RegExp(
         "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+[.][a-zA-Z0-9-.]+$"
       );
-      console.log("regex", regex.test(req.body.email));
       if (regex.test(req.body.email)) {
         users.forEach(element => {
           if (element.email == req.body.email) {
@@ -46,7 +57,6 @@ userRouter.post("/signup", (req, res) => {
         if (isValid) {
           bcrypt.hash(req.body.password, rounds, (error, hash) => {
             if (error) {
-              console.log("error", error);
               res.status(500).json(error);
             } else {
               const newUser = User({
