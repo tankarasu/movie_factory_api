@@ -4,45 +4,123 @@ let movieRouter = express.Router();
 // import axios pour utilisation avec requêtes API en suivant
 const axios = require("axios");
 
-// requête pour les films les plus populaires
-// TODO intégrer dans une documentation
+// variables globales
+const baseUrl = "https://api.themoviedb.org/3/";
+const API_KEY = process.env.API_KEY;
 
+// TODO intégrer dans une documentation
 //racine de réponse API: http://localhost:3050/api/movie
 // réponse si url complète avec api/movie termine par un / sans params supplémentaires
-movieRouter.route("/").get((req, response) => {
+
+// GET //
+// requête pour les films les plus populaires
+movieRouter.route("/").get((request, response) => {
   axios
-    .get( // exécution de la requête
-      "https://api.themoviedb.org/3/movie/popular?api_key=d147fe4e04ba78d12adf57c89fb3ad72&language=fr-FR&page=1"
+    .get(
+      // exécution de la requête
+      `${baseUrl}movie/popular?api_key=${API_KEY}&language=fr-FR&page=1`
     )
-    .then(result => { // envoi de la réponse si statut réponse Ok
-      response.send(result.data);
-    })
-    .catch(err => { // sinon erreur renvoyée dans brower/postman
+    // envoi de la réponse si statut réponse Ok
+    .then(result => response.send(result.data))
+    .catch(err => {
+      console.log("Erreur de connexion");
+      // TODO gestion de l'erreur
+      // sinon erreur renvoyée dans brower/postman
       throw err;
     });
 });
 
-// GET //
-// route pour films populaires
-// `https://api.themoviedb.org/3/movie/popular?api_key=d147fe4e04ba78d12adf57c89fb3ad72&language=fr-FR&page=1`;
-// route pour correspondance id et nom de catégories
-// `https://api.themoviedb.org/3/genre/movie/list?api_key=d147fe4e04ba78d12adf57c89fb3ad72&language=en-US`;
+// requêtes pour les films par catégorie
+movieRouter.route("/genre/:genre").get((request, response) => {
+  axios
+    .get(
+      `${baseUrl}discover/movie?api_key=${API_KEY}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&with_genres=${request.params.genre}`
+    )
+    .then(result => response.send(result.data))
+    .catch(err => {
+      console.log("Erreur de connexion");
+      // TODO gestion de l'erreur
+      // sinon erreur renvoyée dans brower/postman
+      throw err;
+    });
+});
 
-// route principale?
-//`https://api.themoviedb.org/3/discover/movie?api_key=d147fe4e04ba78d12adf57c89fb3ad72`;
+// requête recherche par année
+movieRouter.route("/year/:year").get((request, response) => {
+  axios
+    .get(
+      `${baseUrl}discover/movie?api_key=${API_KEY}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&year=${request.params.year}`
+    )
+    .then(result => response.send(result.data))
+    .catch(err => {
+      console.log("Erreur de connexion");
+      // TODO gestion de l'erreur
+      // sinon erreur renvoyée dans brower/postman
+      throw err;
+    });
+});
 
-// route par catégories
-//`https://api.themoviedb.org/3/discover/movie?api_key=d147fe4e04ba78d12adf57c89fb3ad72&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&with_genres=28`;
-
-// route par année
-//`https://api.themoviedb.org/3/discover/movie?api_key=d147fe4e04ba78d12adf57c89fb3ad72&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=1&year=2020` // route recherche par titre de film
-//`https://api.themoviedb.org/3/search/movie?api_key=d147fe4e04ba78d12adf57c89fb3ad72&language=en-US&page=1&include_adult=false&query=bird`;
+// route recherche par titre de film
+movieRouter.route("/title/:title").get((request, response) => {
+  axios
+    .get(
+      `${baseUrl}search/movie?api_key=${API_KEY}&language=en-US&page=1&include_adult=false&query=${request.params.title}`
+    )
+    .then(result => response.send(result.data))
+    .catch(err => {
+      console.log("Erreur de connexion");
+      // TODO gestion de l'erreur
+      // sinon erreur renvoyée dans brower/postman
+      throw err;
+    });
+});
 
 // route recherche par personnes (acteurs ET réalisateurs, etc)
-//`https://api.themoviedb.org/3/search/person?api_key=d147fe4e04ba78d12adf57c89fb3ad72&language=en-US&query=pitt&page=1&include_adult=false`;
+movieRouter.route("/person/:person").get((request, response) => {
+  axios
+    .get(
+      `${baseUrl}search/person?api_key=${API_KEY}&language=en-US&query=${request.params.person}&page=1&include_adult=false`
+    )
+    .then(result => response.send(result.data))
+    .catch(err => {
+      console.log("Erreur de connexion");
+      // TODO gestion de l'erreur
+      // sinon erreur renvoyée dans brower/postman
+      throw err;
+    });
+});
 
-// Détails acteurs pour chaque film
-//`https://api.themoviedb.org/3/movie/405774/credits?language=en-US&api_key=d147fe4e04ba78d12adf57c89fb3ad72`;
+// infos des credits cast et production sur un film
+movieRouter.route("/credits/:credits").get((request, response) => {
+  axios
+    .get(
+      `${baseUrl}movie/${request.params.credits}/credits?language=en-US&api_key=${API_KEY}`
+    )
+    .then(result => response.send(result.data))
+    .catch(err => {
+      console.log("Erreur de connexion");
+      // TODO gestion de l'erreur
+      // sinon erreur renvoyée dans brower/postman
+      throw err;
+    });
+});
+
+// route pour correspondance id et nom de catégories
+movieRouter.route("/categories").get((request, response) => {
+  axios
+    .get(`${baseUrl}genre/movie/list?api_key=${API_KEY}&language=en-US`)
+    .then(result => response.send(result.data))
+    .catch(err => {
+      console.log("Erreur de connexion");
+      console.log("err:", err.response);
+      // TODO gestion de l'erreur
+      // sinon erreur renvoyée dans brower/postman
+      throw err;
+    });
+});
+
+// route principale?
+//`${baseUrl}discover/movie?api_key=${API_KEY}`;
 
 // préfixe pour images (poster path obtenu dans les détails de chaque film)
 //`https://image.tmdb.org/t/p/w500/`;
@@ -54,5 +132,4 @@ movieRouter.route("/").get((req, response) => {
 // DELETE //
 
 // exporte le router pour import dans fichiers tiers
-console.log(process.env.API_KEY);
 module.exports = movieRouter;
