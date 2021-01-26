@@ -20,14 +20,19 @@ const middleware = require("./middleware.js");
 // connexion
 // fonction get liée à la route login 
 userRouter.get("/login", (req, res) => {
-  // comparaison 
+  // recherche d'un utilisateur avec l'adresse email fournie par postman/browser
   User.findOne({ email: req.body.email }).then(user => {
-    if (!user) res.status(404).json({ error: "no user with that email found" });
+    // s'il nexiste pas d'utilisateur avec cette adresse email, avertissement
+    if (!user) res.status(404).json({ error: "No user with that email found" });
     else {
+      // sinon, comparaison du mot de passe fourni pour connexion avec le mdp en bdd
       bcrypt.compare(req.body.password, user.password, (error, match) => {
+        // si erreur de comparaison => renvoi code d'erreur serveur interne
         if (error) res.status(500).json(error);
+        // sinon si le statut de la réponse est à 200 (car réponse OK), génération d'un token avec les identifiants utilisateur contenus dans la requête
         else if (match) res.status(200).json({ token: generateToken(user) });
-        else res.status(403).json({ error: "the password is invalid" });
+        // sinon si statut de réponse erreur 403, affichage message erreur en conséquence
+        else res.status(403).json({ error: "The password is invalid" });
       });
     }
   });
@@ -36,45 +41,50 @@ userRouter.get("/login", (req, res) => {
 // inscription
 // TODO gestion d'erreur
 userRouter.post("/signup", (req, res) => {
+  // initialisation tableau vide pour stockage des entrées en bdd
   let users = [];
-  // récupère tous les objets dans user
+  // utilisation de la méthode find de mongodb pour parcourir la table user, sans paramètres de recherche (d'où les parenthèses vides)
   User.find({})
     .exec()
     .then(item => {
-      // destructuring par spread operator 
+      // destructuring par spread operator pour ajout de chaque entrée de la table user dans le tableau users
       users = [...item];
       let isValid = true;
-      const regex = new RegExp(
+      const regex = new RegExp( // initialisation regex pour vérification format d'adresse email
         "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+[.][a-zA-Z0-9-.]+$"
       );
+      // si la regex matche bien l'adresse email passée en requête
       if (regex.test(req.body.email)) {
-        users.forEach(element => {
-          if (element.email == req.body.email) {
+        users.forEach(element => { // on itère sur la table users pour trouver un user qui utilise cet email 
+          if (element.email == req.body.email) {  // si l'adresse email est trouvée en base, le nouvel utilisateur ne pourra pas l'utiliser
+            // donc la nouvelle adresse email n'est pas considérée comme valide.
             isValid = false;
           }
         });
-
-        if (isValid) {
+        // si isValid est à true, on va continuer en hashant le mot de passe via la fonction hash du module bcrypt
+        if (isValid) { // Le nombre de rounds représente la complexité de salage, comme défini en début de fichier
           bcrypt.hash(req.body.password, rounds, (error, hash) => {
-            if (error) {
+            if (error) { //
               res.status(500).json(error);
             } else {
+              // si pas d'erreur de cryptage, écriture d'un nouvel user au format JSON pour matcher notre modèle User. email, et password crypté
               const newUser = User({
                 email: req.body.email,
                 password: hash,
               });
+              // utilisation méthode save() d'ajout de user dans bdd
               newUser
                 .save()
-                .then(user =>
+                .then(user => //si réponse en statut ok, génération de token utilisateur
                   res.status(200).json({ token: generateToken(user) })
                 )
                 .catch(error => res.status(500).json(error));
             }
           });
-        } else {
+        } else { // sinon si isValid a été passé à false, adresse déjà utilisée
           res.send("email déja utilisé");
         }
-      } else {
+      } else { // sinon si la regex ne matche pas, affichage message à l'utilisateur
         res.send("entrez une adresse email valide");
       }
     });
