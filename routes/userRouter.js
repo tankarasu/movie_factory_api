@@ -26,18 +26,57 @@ userRouter.get("/login", (req, res) => {
 // inscription
 // TODO gestion d'erreur
 userRouter.post("/signup", (req, res) => {
-  bcrypt.hash(req.body.password, rounds, (error, hash) => {
-    if (error) {
-      console.log("error", error);
-      res.status(500).json(error);
-    } else {
-      const newUser = User({ email: req.body.email, password: hash });
-      newUser
-        .save()
-        .then(user => res.status(200).json({ token: generateToken(user) }))
-        .catch(error => res.status(500).json(error));
-    }
-  });
+  let users = [];
+  User.find({})
+    .exec()
+    .then(item => {
+      users = [...item];
+      isValid = true;
+      const regex = new RegExp(
+        "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+[.][a-zA-Z0-9-.]+$"
+      );
+      console.log("regex", regex.test(req.body.email));
+      if (regex.test(req.body.email)) {
+        users.forEach(element => {
+          if (element.email == req.body.email) {
+            isValid = false;
+          }
+        });
+
+        if (isValid) {
+          bcrypt.hash(req.body.password, rounds, (error, hash) => {
+            if (error) {
+              console.log("error", error);
+              res.status(500).json(error);
+            } else {
+              const newUser = User({
+                email: req.body.email,
+                password: hash,
+              });
+              newUser
+                .save()
+                .then(user =>
+                  res.status(200).json({ token: generateToken(user) })
+                )
+                .catch(error => res.status(500).json(error));
+            }
+          });
+        } else {
+          res.send("email déja utilisé");
+        }
+      } else {
+        res.send("entrez une adresse email valide");
+      }
+    });
+});
+
+userRouter.get("/forgot", (req, res) => {
+  res.send("un email a été envoyé sur sur votre messagerie pour validation");
+});
+
+userRouter.put("/update-user", (req, res) => {
+  res.send("votre mot de passe a été changé");
+  // TODO à creuser
 });
 
 // check & verify user

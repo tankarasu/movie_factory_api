@@ -2,7 +2,7 @@
 // dans la variable d'environnement
 require("dotenv").config();
 // destructuration des variables d'environnement
-let { API_KEY, PORT, mongoURI } = process.env;
+let { PORT, mongoURI } = process.env;
 
 // import puis instanciation de expressJS: framework backend
 const express = require("express");
@@ -11,6 +11,9 @@ const app = express();
 const bodyParser = require("body-parser");
 // configuration DB
 const mongoose = require("mongoose");
+// config swagger
+const expressOasGenerator = require("express-oas-generator");
+expressOasGenerator.init(app, {}); // to overwrite generated specification's values use second argument.
 
 mongoose.connect(mongoURI, {
   useUnifiedTopology: true,
