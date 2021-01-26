@@ -1,28 +1,28 @@
 // import de modules
-// import du framework backend 
+// import du framework backend
 const express = require("express");
 // gestion des routes en relation avec user
 const userRouter = express.Router();
-// import du schema utilisateur 
+// import du schema utilisateur
 const User = require("../models/user.js");
 // import du module pour crypter le mot de passe
 const bcrypt = require("bcrypt");
-// indice pour la complexité du grain de sel 
+// indice pour la complexité du grain de sel
 const rounds = 10;
-// module qui retourne le token 
+// module qui retourne le token
 const jwt = require("jsonwebtoken");
 // signature pour décoder le token
 const tokenSecret = "my-secret-token";
-// vérification validité du token 
+// vérification validité du token
 const middleware = require("./middleware.js");
 
 // routes
 // connexion
-// fonction get liée à la route login 
-userRouter.get("/login", (req, res) => {
+// fonction get liée à la route login
+userRouter.post("/login", (req, res) => {
   // recherche d'un utilisateur avec l'adresse email fournie par postman/browser
   User.findOne({ email: req.body.email }).then(user => {
-    // s'il nexiste pas d'utilisateur avec cette adresse email, avertissement
+    // s'il n'existe pas d'utilisateur avec cette adresse email, avertissement
     if (!user) res.status(404).json({ error: "No user with that email found" });
     else {
       // sinon, comparaison du mot de passe fourni pour connexion avec le mdp en bdd
@@ -55,16 +55,20 @@ userRouter.post("/signup", (req, res) => {
       );
       // si la regex matche bien l'adresse email passée en requête
       if (regex.test(req.body.email)) {
-        users.forEach(element => { // on itère sur la table users pour trouver un user qui utilise cet email 
-          if (element.email == req.body.email) {  // si l'adresse email est trouvée en base, le nouvel utilisateur ne pourra pas l'utiliser
+        users.forEach(element => {
+          // on itère sur la table users pour trouver un user qui utilise cet email
+          if (element.email == req.body.email) {
+            // si l'adresse email est trouvée en base, le nouvel utilisateur ne pourra pas l'utiliser
             // donc la nouvelle adresse email n'est pas considérée comme valide.
             isValid = false;
           }
         });
         // si isValid est à true, on va continuer en hashant le mot de passe via la fonction hash du module bcrypt
-        if (isValid) { // Le nombre de rounds représente la complexité de salage, comme défini en début de fichier
+        if (isValid) {
+          // Le nombre de rounds représente la complexité de salage, comme défini en début de fichier
           bcrypt.hash(req.body.password, rounds, (error, hash) => {
-            if (error) { //
+            if (error) {
+              //
               res.status(500).json(error);
             } else {
               // si pas d'erreur de cryptage, écriture d'un nouvel user au format JSON pour matcher notre modèle User. email, et password crypté
@@ -75,16 +79,18 @@ userRouter.post("/signup", (req, res) => {
               // utilisation méthode save() d'ajout de user dans bdd
               newUser
                 .save()
-                .then(user => //si réponse en statut ok, génération de token utilisateur
-                  res.status(200).json({ token: generateToken(user) })
-                )
+                .then((
+                  user //si réponse en statut ok, génération de token utilisateur
+                ) => res.status(200).json({ token: generateToken(user) }))
                 .catch(error => res.status(500).json(error));
             }
           });
-        } else { // sinon si isValid a été passé à false, adresse déjà utilisée
+        } else {
+          // sinon si isValid a été passé à false, adresse déjà utilisée
           res.send("email déja utilisé");
         }
-      } else { // sinon si la regex ne matche pas, affichage message à l'utilisateur
+      } else {
+        // sinon si la regex ne matche pas, affichage message à l'utilisateur
         res.send("entrez une adresse email valide");
       }
     });

@@ -11,6 +11,10 @@ const app = express();
 const bodyParser = require("body-parser");
 // configuration DB
 const mongoose = require("mongoose");
+// cors
+const cors = require("cors");
+app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }));
+
 // config swagger
 const expressOasGenerator = require("express-oas-generator");
 expressOasGenerator.init(app, {}); // to overwrite generated specification's values use second argument.
