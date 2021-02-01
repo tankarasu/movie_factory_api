@@ -33,7 +33,7 @@ userRouter.post("/login", (req, res) => {
 
 // inscription
 // TODO gestion d'erreur
-userRouter.post("/signup", (req, res) => {
+userRouter.get("/signup", (req, res) => {
   // initialisation tableau vide pour stockage des entrées en bdd
   let users = [];
   // utilisation de la méthode find de mongodb pour parcourir la table user, sans paramètres de recherche (d'où les parenthèses vides)
@@ -80,21 +80,21 @@ userRouter.post("/signup", (req, res) => {
           });
         } else {
           // sinon si isValid a été passé à false, adresse déjà utilisée
-          res.send("email déja utilisé");
+          res.send("Email déja utilisé");
         }
       } else {
         // sinon si la regex ne matche pas, affichage message à l'utilisateur
-        res.send("entrez une adresse email valide");
+        res.send("Entrez une adresse email valide");
       }
     });
 });
 
 userRouter.post("/forgot", (req, res) => {
   let users = [];
-  this.sendMail();
   User.find({})
   .exec()
   .then(item => {
+    console.log("Backend: Forgot route called");
     let users = [];
     // utilisation de la méthode find de mongodb pour parcourir la table user, sans paramètres de recherche (d'où les parenthèses vides)
     User.find({})
@@ -102,22 +102,24 @@ userRouter.post("/forgot", (req, res) => {
       .then(item => {
         // destructuring par spread operator pour ajout de chaque entrée de la table user dans le tableau users
         users = [...item];
-        let isValid = true;
+        let found = false;
         const regex = new RegExp( // initialisation regex pour vérification format d'adresse email
           "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+[.][a-zA-Z0-9-.]+$"
         );
         // si la regex matche bien l'adresse email passée en requête
+        console.log("req avant regex",req);
         if (regex.test(req.body.recipientEmail)) {
+          console.log("test regex: ",regex.test(req.body.recipientEmail));
           users.forEach(element => {
             // on itère sur la table users pour trouver un user qui utilise cet email
             if (element.email == req.body.recipientEmail) {
               // si l'adresse email est trouvée en base, on va pouvoir déclencher l'envoi de mail
-              isValid = true;
+              found = true;
             }
           });
-          if (isValid) {
+          if (found) {
             // partie envoi de mail
-            
+            console.log("found!")
             const nodemailer = require('nodemailer');
             const {smtpEmail,smtpPassword,oAuthID,oAuthSecret,refreshToken } = process.env;
             // création d'un objet transporter
@@ -141,18 +143,23 @@ userRouter.post("/forgot", (req, res) => {
             transporter.sendMail(mailOptions, function(err, data) {
               if (err) {
                 console.log("Error " + err);
+                res.send("Sending failed");
               } else {
                 console.log("Email sent successfully");
                 res.send("true");
               }
             });
           } else {
-            // sinon si isValid a été passé à false, adresse non trouvée en base
+            // sinon si found est toujours à false, adresse non trouvée en base
+            res.send("not found - Contenu de la requête: "+req);
           }
         } else {
           // si recipientEmail ne matche pas la regex, renvoie false
-          res.send("false");
+          //res.send("false");
+          res.send("Invalid - Contenu de la requête: "+req);
         }
+        
+
     });
   });
 });
