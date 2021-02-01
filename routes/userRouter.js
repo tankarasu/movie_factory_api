@@ -136,13 +136,14 @@ userRouter.post("/forgot", (req, res) => {
             });  
               let mailOptions = {
               from: "tmfresetservice@gmail.com",
-              to: this.recipientEmail,
+              to: req.body.recipientEmail,
               subject: 'Nodemailer Project',
               text: 'Hi from your nodemailer project'
             };
             transporter.sendMail(mailOptions, function(err, data) {
               if (err) {
                 console.log("Error " + err);
+                console.log("Recipient: "+req.body.recipientEmail);
                 res.send("Sending failed");
               } else {
                 console.log("Email sent successfully");
