@@ -1,20 +1,13 @@
 // import de modules
 // import du framework backend
-const express = require("express");
-// gestion des routes en relation avec user
-const userRouter = express.Router();
-// import du schema utilisateur
-const User = require("../models/user.js");
-// import du module pour crypter le mot de passe
-const bcrypt = require("bcrypt");
-// indice pour la complexité du grain de sel
-const rounds = 10;
-// module qui retourne le token
-const jwt = require("jsonwebtoken");
-// signature pour décoder le token
-const tokenSecret = "my-secret-token";
-// vérification validité du token
-const middleware = require("./middleware.js");
+const express = require("express"); 
+const userRouter = express.Router(); // gestion des routes en relation avec user
+const User = require("../models/user.js"); // import du schema utilisateur
+const bcrypt = require("bcrypt"); // import du module pour crypter le mot de passe
+const rounds = 10; // indice pour la complexité du grain de sel
+const jwt = require("jsonwebtoken"); // module qui retourne le token
+const tokenSecret = "my-secret-token"; // signature pour décoder le token
+const middleware = require("./middleware.js"); // inclusion middleware contenant méthode check validité du token
 
 // routes
 // connexion
@@ -96,11 +89,74 @@ userRouter.post("/signup", (req, res) => {
     });
 });
 
-userRouter.get("/forgot", (req, res) => {
-  res.send("un email a été envoyé sur sur votre messagerie pour validation");
+userRouter.post("/forgot", (req, res) => {
+  let users = [];
+  this.sendMail();
+  User.find({})
+  .exec()
+  .then(item => {
+    let users = [];
+    // utilisation de la méthode find de mongodb pour parcourir la table user, sans paramètres de recherche (d'où les parenthèses vides)
+    User.find({})
+      .exec()
+      .then(item => {
+        // destructuring par spread operator pour ajout de chaque entrée de la table user dans le tableau users
+        users = [...item];
+        let isValid = true;
+        const regex = new RegExp( // initialisation regex pour vérification format d'adresse email
+          "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+[.][a-zA-Z0-9-.]+$"
+        );
+        // si la regex matche bien l'adresse email passée en requête
+        if (regex.test(req.body.recipientEmail)) {
+          users.forEach(element => {
+            // on itère sur la table users pour trouver un user qui utilise cet email
+            if (element.email == req.body.recipientEmail) {
+              // si l'adresse email est trouvée en base, on va pouvoir déclencher l'envoi de mail
+              isValid = true;
+            }
+          });
+          if (isValid) {
+            // partie envoi de mail
+            
+            const nodemailer = require('nodemailer');
+            const {smtpEmail,smtpPassword,oAuthID,oAuthSecret,refreshToken } = process.env;
+            // création d'un objet transporter
+            let transporter = nodemailer.createTransport({
+              service: 'gmail',
+              auth: {
+                type: 'OAuth2',
+                user: smtpEmail,
+                pass: smtpPassword,
+                clientId: oAuthID,
+                clientSecret: oAuthSecret,
+                refreshToken: refreshToken
+              }
+            });  
+              let mailOptions = {
+              from: "tmfresetservice@gmail.com",
+              to: this.recipientEmail,
+              subject: 'Nodemailer Project',
+              text: 'Hi from your nodemailer project'
+            };
+            transporter.sendMail(mailOptions, function(err, data) {
+              if (err) {
+                console.log("Error " + err);
+              } else {
+                console.log("Email sent successfully");
+                res.send("true");
+              }
+            });
+          } else {
+            // sinon si isValid a été passé à false, adresse non trouvée en base
+          }
+        } else {
+          // si recipientEmail ne matche pas la regex, renvoie false
+          res.send("false");
+        }
+    });
+  });
 });
-
-userRouter.put("/update-user", (req, res) => {
+userRouter.put("/update-user/:email", (req, res) => {
   res.send("votre mot de passe a été changé");
   // TODO à creuser
 });

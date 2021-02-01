@@ -20,6 +20,7 @@
     "express-oas-generator": "^1.0.30",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.11.13",
+    "nodemailer": "^6.4.17",
     "swagger-ui": "^3.40.0"
   },
   "devDependencies": {
