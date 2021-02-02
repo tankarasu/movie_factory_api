@@ -68,7 +68,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
  *  description: use to request films
  * responses:
  * 200:
- * $description:a succesfully responses
+
  */
 app.use("/api/movie", movieRouter);
 app.use("/user", userRouter);

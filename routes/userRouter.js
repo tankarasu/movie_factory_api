@@ -12,15 +12,6 @@ const middleware = require("./middleware.js"); // inclusion middleware contenant
 // routes
 // connexion
 // fonction get liée à la route login
-/**
- * @swagger
- * /api/movie:
- * get:
- *  description: use to request films
- * responses:
- * 200:
- * $description:a successfully responses
- */
 userRouter.post("/login", (req, res) => {
   // recherche d'un utilisateur avec l'adresse email fournie par postman/browser
   User.findOne({ email: req.body.email }).then(user => {

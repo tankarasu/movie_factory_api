@@ -9,7 +9,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "TK MBG MB TE",
+  "author": "TanKarasu MBG MB TE",
   "license": "MIT",
   "dependencies": {
     "axios": "^0.21.1",
