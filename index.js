@@ -15,31 +15,6 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }));
 
-// config swagger
-const swaggerJsDoc = require("swagger-jsdoc");
-const swaggerUi = require("swagger-ui-express");
-
-const swaggerOptions = {
-  swaggerDefinition: {
-    info: {
-      title: "The Movie Factory API",
-      description: "API for login users and fetching films + info",
-      contact: {
-        name: "Tan KARASU",
-      },
-      servers: ["http://localhost:3050"],
-    },
-  },
-  apis: ["index.js", "./routes/movieRouter.js"],
-};
-/**
- * @swagger
- * /api/movie
- * test doc
- */
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
 mongoose.connect(mongoURI, {
   useUnifiedTopology: true,
   useNewUrlParser: true,
@@ -60,16 +35,6 @@ app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-//Routes
-/**
- * @swagger
- * /api/movie:
- * get:
- *  description: use to request films
- * responses:
- * 200:
-
- */
 app.use("/api/movie", movieRouter);
 app.use("/user", userRouter);
 
