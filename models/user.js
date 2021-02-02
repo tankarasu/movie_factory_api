@@ -13,6 +13,16 @@ const model = mongoose.Schema({
     type: String,
     required: true,
   },
+  username: {
+    type: String,
+    required: true,
+  },
+  favorite: {
+    type: Array,
+  },
+  seen: {
+    type: Array,
+  },
 });
 
 // export du model

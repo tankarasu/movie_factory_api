@@ -3,6 +3,7 @@ const express = require("express");
 const movieRouter = express.Router();
 // import axios pour utilisation avec requêtes API en suivant
 const axios = require("axios");
+const { response } = require("express");
 
 // variables globales
 const baseUrl = "https://api.themoviedb.org/3/";
@@ -38,7 +39,7 @@ movieRouter.route("/genre/:genre").get((request, response) => {
     )
     .then(result => response.send(result.data))
     .catch(err => {
-      console.log("Erreur de connexion");
+      console.log("err1:Erreur de connexion");
       // TODO gestion de l'erreur
       // sinon erreur renvoyée dans brower/postman
       throw err;
@@ -75,11 +76,26 @@ movieRouter.route("/title/:title").get((request, response) => {
     });
 });
 
-// route recherche par personnes (acteurs ET réalisateurs, etc)
+// route recherche Spécificité de film
+movieRouter.route("/spec/:id").get((request, response) => {
+  axios
+    .get(
+      `${baseUrl}movie/${request.params.id}?api_key=${API_KEY}&language=en-US&page=1&include_adult=false`
+    )
+    .then(result => response.send(result.data))
+    .catch(err => {
+      console.log("Erreur de connexion");
+      // TODO gestion de l'erreur
+      // sinon erreur renvoyée dans brower/postman
+      throw err;
+    });
+});
+
+// route recherche par acteur
 movieRouter.route("/person/:person").get((request, response) => {
   axios
     .get(
-      `${baseUrl}search/person?api_key=${API_KEY}&language=en-US&query=${request.params.person}&page=1&include_adult=false`
+      `${baseUrl}discover/movie?api_key=${API_KEY}&language=en-US&with_cast=${request.params.person}&page=1&include_adult=false&sort_by=popularity_desc`
     )
     .then(result => response.send(result.data))
     .catch(err => {
@@ -119,6 +135,27 @@ movieRouter.route("/categories").get((request, response) => {
     });
 });
 
+// routes pour la video
+movieRouter.route("/video/:video").get((req, res) => {
+  axios
+    .get(
+      `${baseUrl}movie/${req.params.video}/videos?api_key=${API_KEY}&language=en-US`
+    )
+    .then(result => res.send(result.data))
+    .catch(err => {
+      throw err;
+    });
+});
+
+// routes pour le film par ID
+movieRouter.route("/:id").get((req, res) => {
+  axios
+    .get(`${baseUrl}movie/${req.params.id}?api_key=${API_KEY}&language=en-US`)
+    .then(result => res.send(result.data))
+    .catch(err => {
+      throw err;
+    });
+});
 // préfixe pour images (poster path obtenu dans les détails de chaque film)
 //`https://image.tmdb.org/t/p/w500/`;
 

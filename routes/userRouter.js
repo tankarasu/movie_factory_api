@@ -31,6 +31,18 @@ userRouter.post("/login", (req, res) => {
   });
 });
 
+/**
+ * All user to fetch
+ */
+userRouter.get("/alluser", (req, res) => {
+  User.find({})
+    .then(result => {
+      console.log("result:", result);
+      res.send(result)
+    })
+    .catch(err => err);
+});
+
 // inscription
 // TODO gestion d'erreur
 userRouter.get("/signup", (req, res) => {
@@ -68,6 +80,9 @@ userRouter.get("/signup", (req, res) => {
               const newUser = User({
                 email: req.body.email,
                 password: hash,
+                username: req.body.username,
+                favorite: [],
+                seen: [],
               });
               // utilisation méthode save() d'ajout de user dans bdd
               newUser
@@ -167,6 +182,53 @@ userRouter.post("/forgot", (req, res) => {
 userRouter.put("/update-user/:email", (req, res) => {
   res.send("votre mot de passe a été changé");
   // TODO à creuser
+});
+
+userRouter.put("/addfavorite", async (req, res, next) => {
+  User.findOne({ email: req.body.email }).then(res => {
+    console.log(res, req.body);
+    res.favorite.push(req.body.filmId);
+    res.save();
+  });
+});
+
+userRouter.put("/removefavorite", async (req, res, next) => {
+  User.findOne({ email: req.body.email }).then(res => {
+    // console.log("remove favorite", req.body.filmId);
+    // console.log("res", res.favorite);
+
+    for (let i = 0; i < res.favorite.length; i++) {
+      if (res.favorite[i].id == req.body.filmId) {
+        res.favorite.splice(i, 1);
+      }
+    }
+    res.save();
+  });
+});
+
+userRouter.put("/seen", async (req, res, next) => {
+  User.findOne({ email: req.body.email }).then(res => {
+    console.log("seen");
+    res.seen.push(req.body.filmId);
+    res.save();
+  });
+});
+
+userRouter.put("/removeseen", async (req, res, next) => {
+  User.findOne({ email: req.body.email }).then(res => {
+    console.log("remove seen");
+    // console.log("remove favorite", req.body.filmId);
+    // console.log("res", res.favorite);
+    console.log("req", req);
+
+    for (let i = 0; i < res.seen.length; i++) {
+      console.log(res.seen[i].id);
+      if (res.seen[i].id == req.body.id) {
+        res.seen.splice(i, 1);
+      }
+    }
+    res.save();
+  });
 });
 
 // check & verify user
