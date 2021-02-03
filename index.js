@@ -14,6 +14,7 @@ const mongoose = require("mongoose");
 // cors
 const cors = require("cors");
 
+app.options("*", cors());
 app.use(cors());
 
 app.use(function (req, res, next) {
