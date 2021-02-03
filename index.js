@@ -13,6 +13,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 // cors
 const cors = require("cors");
+app.options("*", cors());
 app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "DELETE"] }));
 
 mongoose.connect(mongoURI, {
