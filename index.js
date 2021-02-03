@@ -15,7 +15,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 app.options("*", cors());
-app.use(cors());
+app.use(cors({ optionsSuccessStatus: 200 }));
 
 mongoose.connect(mongoURI, {
   useUnifiedTopology: true,
