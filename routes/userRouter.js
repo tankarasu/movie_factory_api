@@ -1,6 +1,6 @@
 // import de modules
 // import du framework backend
-const express = require("express"); 
+const express = require("express");
 const userRouter = express.Router(); // gestion des routes en relation avec user
 const User = require("../models/user.js"); // import du schema utilisateur
 const bcrypt = require("bcrypt"); // import du module pour crypter le mot de passe
@@ -38,7 +38,7 @@ userRouter.get("/alluser", (req, res) => {
   User.find({})
     .then(result => {
       console.log("result:", result);
-      res.send(result)
+      res.send(result);
     })
     .catch(err => err);
 });
@@ -107,78 +107,85 @@ userRouter.post("/signup", (req, res) => {
 userRouter.post("/forgot", (req, res) => {
   let users = [];
   User.find({})
-  .exec()
-  .then(item => {
-    console.log("Backend: Forgot route called");
-    let users = [];
-    // utilisation de la méthode find de mongodb pour parcourir la table user, sans paramètres de recherche (d'où les parenthèses vides)
-    User.find({})
-      .exec()
-      .then(item => {
-        // destructuring par spread operator pour ajout de chaque entrée de la table user dans le tableau users
-        users = [...item];
-        let found = false;
-        const regex = new RegExp( // initialisation regex pour vérification format d'adresse email
-          "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+[.][a-zA-Z0-9-.]+$"
-        );
-        // si la regex matche bien l'adresse email passée en requête
-        console.log("req avant regex",req);
-        if (regex.test(req.body.recipientEmail)) {
-          console.log("test regex: ",regex.test(req.body.recipientEmail));
-          users.forEach(element => {
-            // on itère sur la table users pour trouver un user qui utilise cet email
-            if (element.email == req.body.recipientEmail) {
-              // si l'adresse email est trouvée en base, on va pouvoir déclencher l'envoi de mail
-              found = true;
-            }
-          });
-          if (found) {
-            // partie envoi de mail
-            console.log("found!")
-            const nodemailer = require('nodemailer');
-            const {smtpEmail,smtpPassword,oAuthID,oAuthSecret,refreshToken } = process.env;
-            // création d'un objet transporter
-            let transporter = nodemailer.createTransport({
-              service: 'gmail',
-              auth: {
-                type: 'OAuth2',
-                user: smtpEmail,
-                pass: smtpPassword,
-                clientId: oAuthID,
-                clientSecret: oAuthSecret,
-                refreshToken: refreshToken
-              }
-            });  
-              let mailOptions = {
-              from: "tmfresetservice@gmail.com",
-              to: req.body.recipientEmail,
-              subject: 'Nodemailer Project',
-              text: 'Hi from your nodemailer project'
-            };
-            transporter.sendMail(mailOptions, function(err, data) {
-              if (err) {
-                console.log("Error " + err);
-                console.log("Recipient: "+req.body.recipientEmail);
-                res.send("Sending failed");
-              } else {
-                console.log("Email sent successfully");
-                res.send("true");
+    .exec()
+    .then(item => {
+      let users = [];
+      // utilisation de la mÃ©thode find de mongodb pour parcourir la table user, sans paramÃ¨tres de recherche (d'oÃ¹ les parenthÃ¨ses vides)
+      User.find({})
+        .exec()
+        .then(item => {
+          // destructuring par spread operator pour ajout de chaque entrÃ©e de la table user dans le tableau users
+          users = [...item];
+          let found = false;
+          const regex = new RegExp( // initialisation regex pour vÃ©rification format d'adresse email
+            "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+[.][a-zA-Z0-9-.]+$"
+          );
+          // si la regex matche bien l'adresse email passÃ©e en requÃªte
+          if (regex.test(req.body.recipientEmail)) {
+            users.forEach(element => {
+              // on itÃ¨re sur la table users pour trouver un user qui utilise cet email
+              if (element.email == req.body.recipientEmail) {
+                // si l'adresse email est trouvÃ©e en base, on va pouvoir dÃ©clencher l'envoi de mail
+                found = true;
               }
             });
-          } else {
-            // sinon si found est toujours à false, adresse non trouvée en base
-            res.send("not found - Contenu de la requête: "+req);
-          }
-        } else {
-          // si recipientEmail ne matche pas la regex, renvoie false
-          //res.send("false");
-          res.send("Invalid - Contenu de la requête: "+req);
-        }
-        
+            if (found) {
+              // partie envoi de mail
+              const nodemailer = require("nodemailer");
+              const {
+                smtpEmail,
+                smtpPassword,
+                oAuthID,
+                oAuthSecret,
+                refreshToken,
+              } = process.env;
+              // crÃ©ation d'un objet transporter
+              let transporter = nodemailer.createTransport({
+                service: "gmail",
+                auth: {
+                  type: "OAuth2",
+                  user: smtpEmail,
+                  pass: smtpPassword,
+                  clientId: oAuthID,
+                  clientSecret: oAuthSecret,
+                  refreshToken: refreshToken,
+                },
+              });
+              let mailOptions = {
+                from: "'The Movie Factory team' <tmfresetservice@gmail.com>",
+                to: req.body.recipientEmail,
+                subject: "Password reset link",
+                html: `<p>Email reset asked for  ${req.body.recipientEmail}</p>
+                      <a target="_blank" href="http://127.0.0.1:3051/reset/${req.body.recipientEmail}">
+                        <button id="button-ish">Reset Password</button>
+                      </a>`,
+              };
 
+              transporter.sendMail(mailOptions, function (err, data) {
+                if (err) {
+                  console.log(timeStamp() + " Sending failed");
+                  res.send("failed");
+                } else {
+                  console.log(timeStamp() + " Email sent successfully");
+                  res.send("success");
+                }
+              });
+            } else {
+              // sinon si found est toujours Ã  false, adresse non trouvÃ©e en base
+              console.log(timeStamp() + " User not found: " + req.body.email);
+              res.send("not found");
+            }
+          } else {
+            // si recipientEmail ne matche pas la regex, renvoie invalid
+            console.log(
+              timeStamp() + " Invalid email syntax: " + req.body.email
+            );
+            res.send("invalid");
+          }
+        });
     });
-  });
 });
+
 userRouter.put("/update-user/:email", (req, res) => {
   res.send("votre mot de passe a été changé");
   // TODO à creuser
