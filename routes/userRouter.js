@@ -158,7 +158,7 @@ userRouter.post("/forgot", (req, res) => {
             transporter.sendMail(mailOptions, function(err, data) {
               if (err) {
                 console.log(timeStamp()+" Sending failed");
-                res.send("failed");
+                res.send(err);
               } else {
                 console.log(timeStamp()+" Email sent successfully");
                 res.send("success");
